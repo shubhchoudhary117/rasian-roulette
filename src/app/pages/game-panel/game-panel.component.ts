@@ -190,7 +190,7 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     Promise.all([...imagePromises, ...audioPromises]).then(() => {
       this.ngZone.run(() => {
         this.gameIsLoading = false;
-        // ResizeObserver game box ke dikhne ke baad setup karo
+        this.audio.tryStartBg(); 
         setTimeout(() => this.setupResizeObserver(), 50);
       });
     });
