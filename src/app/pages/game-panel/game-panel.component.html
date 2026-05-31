@@ -4,7 +4,7 @@
 <audio #bgSound src="assets/audios/boom-sound.mp3" loop></audio>
 
 <div class="game-loader" *ngIf="gameIsLoading"></div>
-<section class="gp">
+<section class="gp" *ngIf="!gameIsLoading">
     <main class="gp__container">
         <div class="gp__header">
             <app-header></app-header>
