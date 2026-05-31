@@ -82,6 +82,7 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.rebuildAllDrums();
     this.currentBet = this.stakes[0];
+    this.preloadAssets(); 
   }
 
   ngAfterViewInit(): void {
@@ -93,7 +94,7 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
       this.resizeObserver.observe(box);
       this.recalcSizes(box);
     }
-    this.preloadAssets();
+    this.setupResizeObserver();
   }
 
   ngOnDestroy(): void {
@@ -109,10 +110,26 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
+  private setupResizeObserver(): void {
+    const trySetup = () => {
+      const box = document.querySelector('.gp__game-box') as HTMLElement;
+      if (box) {
+        if (typeof ResizeObserver !== 'undefined') {
+          this.resizeObserver = new ResizeObserver(() => {
+            this.ngZone.run(() => this.recalcSizes(box));
+          });
+          this.resizeObserver.observe(box);
+        }
+        this.recalcSizes(box);
+      } else {
+        setTimeout(trySetup, 100);
+      }
+    };
+    trySetup();
+  }
 
   private preloadAssets(): void {
     const images = [
-      'assets/images/game-loading.gif',
       'assets/images/wow.png',
       'assets/images/boom.png',
       'assets/images/pointer.png',
@@ -126,22 +143,45 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
       'assets/audios/trigger-sound.mp3',
       'assets/audios/spin-sound.mp3',
       'assets/audios/boom-sound.mp3',
+      'assets/audios/bg-sound.mp3',
     ];
 
     const imagePromises = images.map(src =>
       new Promise<void>(resolve => {
         const img = new Image();
         img.onload = () => resolve();
-        img.onerror = () => resolve(); 
+        img.onerror = () => resolve();
         img.src = src;
       })
     );
 
+    // Mobile pe canplaythrough reliable nahi — readyState check better hai
     const audioPromises = audios.map(src =>
       new Promise<void>(resolve => {
         const audio = new Audio();
+
+        // Already enough data hai to play
+        const check = () => {
+          if (audio.readyState >= 3) { // HAVE_FUTURE_DATA
+            resolve();
+            return;
+          }
+        };
+
         audio.oncanplaythrough = () => resolve();
+        audio.onprogress = check;
+        audio.onstalled = () => resolve();  // Network slow — aage badho
         audio.onerror = () => resolve();
+
+        // 5 sec max wait — mobile pe kabhi kabhi audio block hoti
+        const timeout = setTimeout(() => resolve(), 5000);
+
+        audio.addEventListener('canplaythrough', () => {
+          clearTimeout(timeout);
+          resolve();
+        }, { once: true });
+
+        audio.preload = 'auto';
         audio.src = src;
         audio.load();
       })
@@ -150,6 +190,8 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     Promise.all([...imagePromises, ...audioPromises]).then(() => {
       this.ngZone.run(() => {
         this.gameIsLoading = false;
+        // ResizeObserver game box ke dikhne ke baad setup karo
+        setTimeout(() => this.setupResizeObserver(), 50);
       });
     });
   }
