@@ -2,7 +2,7 @@ import {
   Component, OnInit, OnDestroy, AfterViewInit,
   ViewChildren, ElementRef, QueryList, NgZone, HostListener
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { HeaderComponent } from '../../shared/layouts/header/header.component';
 import { AudioService } from '../../services/audio.service';
 import { GameInfoModalComponent } from "../../shared/components/game-info-modal/game-info-modal.component";
@@ -28,7 +28,7 @@ interface DrumState {
 @Component({
   selector: 'app-game-panel',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, GameInfoModalComponent],
+  imports: [CommonModule, HeaderComponent, GameInfoModalComponent,NgIf],
   templateUrl: './game-panel.component.html',
   styleUrl: './game-panel.component.scss'
 })
@@ -70,13 +70,14 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   isAutoPlaying = false;
   autoPlayTimer: any = null;
   remainingRounds = 0;
-  showGameInfo:boolean=false;
+  showGameInfo: boolean = false;
 
   private winPopupTimer: any;
   private losePopupTimer: any;
   private resizeObserver?: ResizeObserver;
+  gameIsLoading = true;
 
-  constructor(private ngZone: NgZone, private audio: AudioService,public gameMenuService:GameMenuService) { }
+  constructor(private ngZone: NgZone, private audio: AudioService, public gameMenuService: GameMenuService) { }
 
   ngOnInit(): void {
     this.rebuildAllDrums();
@@ -92,6 +93,7 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
       this.resizeObserver.observe(box);
       this.recalcSizes(box);
     }
+    this.preloadAssets();
   }
 
   ngOnDestroy(): void {
@@ -105,6 +107,53 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     const box = document.querySelector('.gp__game-box') as HTMLElement;
     if (box) this.recalcSizes(box);
   }
+
+
+
+  private preloadAssets(): void {
+    const images = [
+      'assets/images/game-loading.gif',
+      'assets/images/wow.png',
+      'assets/images/boom.png',
+      'assets/images/pointer.png',
+      'assets/images/drum-center-icon.png',
+      'assets/images/drum.png',
+      'assets/images/bullet.png',
+      'assets/images/blast-bullet.png',
+    ];
+
+    const audios = [
+      'assets/audios/trigger-sound.mp3',
+      'assets/audios/spin-sound.mp3',
+      'assets/audios/boom-sound.mp3',
+    ];
+
+    const imagePromises = images.map(src =>
+      new Promise<void>(resolve => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); 
+        img.src = src;
+      })
+    );
+
+    const audioPromises = audios.map(src =>
+      new Promise<void>(resolve => {
+        const audio = new Audio();
+        audio.oncanplaythrough = () => resolve();
+        audio.onerror = () => resolve();
+        audio.src = src;
+        audio.load();
+      })
+    );
+
+    Promise.all([...imagePromises, ...audioPromises]).then(() => {
+      this.ngZone.run(() => {
+        this.gameIsLoading = false;
+      });
+    });
+  }
+
 
   // ── Size calculation ──────────────────────────────────────
   private recalcSizes(box: HTMLElement): void {
@@ -528,5 +577,5 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showStakesModal = false;
   }
 
-  
+
 }

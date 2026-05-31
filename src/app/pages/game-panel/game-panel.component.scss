@@ -42,6 +42,21 @@
   }
 }
 
+.game-loader{
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-image: url("../../../../public/assets/images/game-loading.gif");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 99999;
+    animation: none;
+    transition: opacity 0.5s ease;
+}
 .gp {
   width: 100%;
   position: relative;
@@ -62,6 +77,12 @@
     align-items: center;
     gap: 2px;
     animation: wowPulse 1.2s ease-in-out infinite;
+
+    @media (max-width:768px) {
+      right: 4%;
+      top: unset;
+      bottom: 5%;
+    }
   }
 
   &__wow-image {
@@ -73,6 +94,11 @@
       height: 100%;
       object-fit: cover;
     }
+
+    @media  (max-width:768px) {
+        width: 100px;
+        height: 60px;
+    }
   }
 
   &__wow-amount {
@@ -81,7 +107,7 @@
     font-size: clamp(1rem, 3vw, 1.6rem);
     color: #05b703;
     -webkit-text-stroke: 1px #05b703;
-    margin-top: -20px;
+    margin-top: -17px;
   }
 
   &__bomb-overlay {
@@ -96,6 +122,12 @@
     align-items: center;
     gap: 2px;
     animation: wowPulse 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+    @media (max-width:768px) {
+        left: -3%;
+        top: unset;
+        top:  25%;
+      }
   }
 
   &__bomb-image {
@@ -107,6 +139,11 @@
       height: 100%;
       object-fit: cover;
     }
+
+         @media (max-width:768px) {
+           width: 120px;
+           height: 60px;
+         }
   }
 
   // ── Layout ─────────────────────────────────────────────────
@@ -280,7 +317,13 @@
         pointer-events: none;
         z-index: 99;
         animation: blastAnim 0.8s ease forwards;
+        @media (max-width:768px) {
+          width: 50px;
+          height: 50px;
+        }
       }
+
+     
     }
 
     @keyframes blastAnim {
