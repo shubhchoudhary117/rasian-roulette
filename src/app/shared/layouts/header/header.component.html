@@ -1,0 +1,26 @@
+<header class="header">
+    <nav class="header__nav">
+
+        <div class="header__nav-left">
+            <div class="header__game-name">
+                Rasian Roulette
+            </div>
+        </div>
+
+        <div class="header__nav-right">
+            <button class="header__nav-action" [class.header__nav-action--disabled]="!audio.soundEnabled"
+                (click)="toggleSound()">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+            <button class="header__nav-action" [class.header__nav-action--disabled]="!audio.musicEnabled"
+                (click)="toggleMusic()">
+                <i class="fa-solid fa-music"></i>
+            </button>
+            <button class="header__nav-action" (click)="openGameInfo()">
+                <i class="fa-solid fa-circle-info"></i>
+            </button>
+
+        </div>
+
+    </nav>
+</header>

@@ -1,0 +1,102 @@
+<div class="rules-backdrop" *ngIf="showModal">
+    <div class="rules-modal">
+
+        <div class="rules-modal__header">
+            <h3 class="rules-modal__title">GAME RULES</h3>
+
+            <button class="rules-modal__close" (click)="showModal=false">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="rules-modal__body">
+
+            <section class="rules-section">
+                <h3 class="rules-section__title">ABOUT THE GAME</h3>
+
+                <p class="rules-section__text">
+                    Russian Roulette is a fast-paced game with 1–6 revolver drums. Before the spin you choose how many
+                    bullets will be in
+                    each drum (1–5) and how many drums participate (1–6). The drums spin and stop under the pointer. If
+                    a bullet lands on
+                    any drum, the round is lost. If all drums stop on empty chambers, you win. Potential maximum
+                    multipliers depend on the
+                    selected risk: more bullets and more drums mean higher possible payouts.
+                </p>
+            </section>
+
+            <section class="rules-section">
+                <h3 class="rules-section__title">MAXIMUM WINS</h3>
+
+                <div class="rules-table-wrapper">
+                    <table class="rules-table">
+                        <thead>
+                            <tr>
+                                <th>K bullets</th>
+                                <th>N drums</th>
+                                <th>Max win</th>
+                                <th>RTP</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr *ngFor="let item of maxWins">
+                                <td>{{item.bullets}}</td>
+                                <td>{{item.drums}}</td>
+                                <td>{{item.maxWin}}</td>
+                                <td>{{item.rtp}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="rules-section">
+                <h3 class="rules-section__title">USER INTERFACE</h3>
+
+                <ol class="rules-list">
+                    <li><b>SPIN </b> — start one round.</li>
+                    <li>Tap ↻ to open the <b>AUTOPLAY</b> panel, then press <b>START AUTOPLAY</b> to begin automatic
+                        play.</li>
+                    <li>Change risk with Bullets (1–5) and Number of drums (1–6). Re-tapping the same button randomizes
+                        bullet positions.</li>
+                    <li>Change risk with Bullets (1–5) and Number of drums (1–6). Re-tapping the same button randomizes
+                        bullet positions for
+                        visual variety — this has no impact on the game outcome..</li>
+                    <li>Tap / click on the bet amount to open the detailed selection panel.</li>
+                    <li><b>TURBO </b>speeds up animations.<< /li>
+                    <li>Sound controls are in the top-right corner (SFX / Music).</li>
+                </ol>
+            </section>
+
+            <section class="rules-section">
+                <h3 class="rules-section__title">THEORETICAL RTP</h3>
+
+                <p class="rules-section__text">
+                    The theoretical RTP ranges between 96.44% and 96.67%.
+                </p>
+            </section>
+
+            <section class="rules-section">
+                <h3 class="rules-section__title">DISCLAIMER</h3>
+
+                <p class="rules-section__text">
+                    Malfunction voids all wins and plays. A consistent internet connection is required. In the event of
+                    a disconnection,
+                    reload the game to finish any uncompleted rounds. The expected return is calculated over many plays.
+                    The game display is
+                    not representative of any physical device and is for illustrative purposes only. Winnings are
+                    settled according to the
+                    amount received from the Remote Game Server and not from events within the web browser. TM and ©
+                    2025 Stake Engine.
+                </p>
+            </section>
+
+            <div class="rules-version">
+                v1.1.0
+            </div>
+
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,168 @@
+<audio #triggerSound src="assets/audios/trigger-sound.mp3"></audio>
+<audio #spinSound src="assets/audios/spin-sound.mp3"></audio>
+<audio #boomSound src="assets/audios/boom-sound.mp3"></audio>
+<audio #bgSound src="assets/audios/boom-sound.mp3" loop></audio>
+
+
+<section class="gp">
+    <main class="gp__container">
+        <div class="gp__header">
+            <app-header></app-header>
+        </div>
+
+        <div class="gp__game-viewport">
+            <div class="gp__game-box" #gameBox>
+                <!-- Win popup — tab tak rahe jab tk dobara spin na ho -->
+                <div class="gp__wow-overlay" *ngIf="winPopupVisible">
+                    <span class="gp__wow-image"><img src="assets/images/wow.png" alt="" class="img"></span>
+                    <span class="gp__wow-amount">+{{ winAmount | number:'1.2-2' }} $</span>
+                </div>
+
+                <!-- Loss popup — 3 sec baad khud hat jaye -->
+                <div class="gp__bomb-overlay" *ngIf="losePopupVisible">
+                    <span class="gp__bomb-image"><img src="assets/images/boom.png" alt="" class="img"></span>
+                </div>
+
+                <div class="gp__drums-grid" [class.gp__drums-grid--wrap]="numDrums > 3">
+                    <div *ngFor="let drum of drumStates; let d = index" class="gp__drum-wrap"
+                        [style.width.px]="drumSize" [style.height.px]="drumSize">
+                        <div class="gp__drum-trigger" [style.width.px]="triggerSize" [style.height.px]="triggerSize"
+                            [style.top]="drum.triggerTop" #triggerEls>
+                            <img src="assets/images/pointer.png" alt="trigger" />
+                        </div>
+
+                        <div class="gp__drum-ring-wrapper" [style.width.px]="drumSize" [style.height.px]="drumSize">
+                            <div class="gp__drum-ring-inner" [class.win-glow]="drum.winGlow"
+                                [class.lose-glow]="drum.loseGlow" #drumRings>
+                                <div class="gp__drum-ring-bg"></div>
+                                <!-- Slots -->
+                                <div *ngFor="let slot of drum.slots; let i = index" class="gp__slot"
+                                    [class.gp__slot--bullet]="slot.isBullet" [class.gp__slot--empty]="!slot.isBullet"
+                                    [class.gp__slot--hit]="slot.isHit" [class.gp__slot--boom]="slot.isBoom"
+                                    [style.left.px]="slot.x" [style.top.px]="slot.y" [style.width.px]="slotSize"
+                                    [style.height.px]="slotSize">
+                                </div>
+
+                            </div>
+                            <div class="gp__drum-center-icon" [style.width.px]="centerSize"
+                                [style.height.px]="centerSize">
+                                <img src="assets/images/drum-center-icon.png">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Controllers -->
+            <div class="gp__controllers">
+                <div class="gp__bullets-and-drums-counts">
+                    <div class="gp__counters">
+                        <div class="gp__counters-label">Bullets</div>
+                        <div class="gp__counters-grid">
+                            <button *ngFor="let n of [1,2,3,4,5]" class="gp__count-btn"
+                                [class.gp__count-btn--active]="bullets === n" [disabled]="spinning || isAutoPlaying"
+                                (click)="setBullets(n)">
+                                {{ n }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="gp__counters">
+                        <div class="gp__counters-label">Number of drums</div>
+                        <div class="gp__counters-grid gp__counters-grid--six">
+                            <button *ngFor="let n of [1,2,3,4,5,6]" class="gp__count-btn"
+                                [class.gp__count-btn--active]="numDrums === n" [disabled]="spinning || isAutoPlaying"
+                                (click)="setDrums(n)">
+                                {{ n }}
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="gp__bet-controllers">
+                    <div class="gp__balance-box">
+                        <span class="label">Balance</span>
+                        <span class="balance-amount">{{ balanceDisplay }}</span>
+                    </div>
+
+                    <div class="gp__amount-input-groups">
+                        <div class="gp__bet-label">Bet</div>
+                        <button class="gp__bet-amount-btn" [disabled]="spinning || isAutoPlaying" (click)="decreaseBet()">−</button>
+                        <button class="gp__amount-stakes-btn" [disabled]="spinning || isAutoPlaying"  (click)="openStakesModal()">{{ betDisplay }}</button>
+                        <button class="gp__bet-amount-btn" [disabled]="spinning || isAutoPlaying" (click)="increaseBet()">+</button>
+                    </div>
+                    <div class="gp__place-bet-actions" *ngIf="!isAutoPlaying">
+                        <button class="gp__auto-bet-btn" (click)="openAutobetModal()">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                        <button class="gp__spin-btn" [disabled]="spinning" (click)="spin()">
+                            SPIN
+                        </button>
+                        <button class="gp__auto-bet-btn">
+                            <i class="fa-solid fa-bolt"></i>
+                        </button>
+                    </div>
+
+                    <div class="gp__place-bet-actions" *ngIf="isAutoPlaying">
+                        <button class="gp__auto-bet-btn active-auto">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                        <button class="gp__spin-btn stop-btn" (click)="stopAutoPlay()">
+                            <i class="fa-solid fa-stop"></i>
+                        </button>
+                        <button class="gp__auto-bet-btn remaining-btn">
+                        <i class="fa-solid fa-rotate-right"></i> {{ remainingRounds }}
+                        </button>
+                        <button class="gp__auto-bet-btn">
+                            <i class="fa-solid fa-bolt"></i>
+                        </button>
+                    </div>
+
+                    <div class="gp__modal-overlay" *ngIf="showStakesModal">
+                        <div class="gp__model">
+                            <h2 class="gp__modal-heading">BET MENU</h2>
+                            <button class="gp__modal-close" (click)="closeStakesModal()"><i
+                                    class="fas fa-close"></i></button>
+                            <div class="gp__manual-stake-groups">
+                                <button class="gp__manual-stake-id-btn" (click)="decreaseBet()">-</button>
+                                <button class="gp__manual-stake-amount-holder">{{ betDisplay }}</button>
+                                <button class="gp__manual-stake-id-btn" (click)="increaseBet()">+ </button>
+                            </div>
+                            <div class="gp__modal-grid">
+                                @for (stake of stakes; track stake) {
+                                <button class="gp__grid-col" [class.active]="currentBet === stake"
+                                    (click)="selectStake(stake)">
+                                    {{ stake }}
+                                </button>
+                                }
+                            </div>
+                            <button class="gp__modal-confirm-btn" (click)="closeStakesModal()">Confirm</button>
+                        </div>
+                    </div>
+
+                    <div class="gp__modal-overlay" *ngIf="showAutoBetModal">
+                        <div class="gp__model">
+                            <h2 class="gp__modal-heading">Auto Play</h2>
+                            <button class="gp__modal-close" (click)="closeAutoBetModal()"><i
+                                    class="fas fa-close"></i></button>
+                            <div class="gp__modal-grid">
+                                @for (round of autoBetsRoundsNumbers; track round) {
+                                <button class="gp__grid-col" [class.active]="selectedAutoRounds === round"
+                                    (click)="selectedAutoRounds = round">
+
+                                    {{ round }}
+                                </button>
+                                }
+                            </div>
+                            <button class="gp__modal-confirm-btn" (click)="startAutoPlay()">
+                                START AUTOPLAY
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</section>
+<app-game-info-modal *ngIf="gameMenuService.gameInfoModal$ | async"></app-game-info-modal>
