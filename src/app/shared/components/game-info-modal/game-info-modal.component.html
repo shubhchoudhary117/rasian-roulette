@@ -1,10 +1,10 @@
-<div class="rules-backdrop" *ngIf="showModal">
-    <div class="rules-modal">
+<div class="rules-backdrop" (click)="closeModal()">
+    <div class="rules-modal" (click)="$event.stopPropagation()">
 
         <div class="rules-modal__header">
             <h3 class="rules-modal__title">GAME RULES</h3>
 
-            <button class="rules-modal__close" (click)="showModal=false">
+            <button class="rules-modal__close" (click)="closeModal()">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>

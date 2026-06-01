@@ -2,7 +2,7 @@ import {
   Component, OnInit, OnDestroy, AfterViewInit,
   ViewChildren, ElementRef, QueryList, NgZone, HostListener
 } from '@angular/core';
-import { CommonModule, NgIf } from '@angular/common';
+import { AsyncPipe, CommonModule, NgIf } from '@angular/common';
 import { HeaderComponent } from '../../shared/layouts/header/header.component';
 import { AudioService } from '../../services/audio.service';
 import { GameInfoModalComponent } from "../../shared/components/game-info-modal/game-info-modal.component";
@@ -28,7 +28,7 @@ interface DrumState {
 @Component({
   selector: 'app-game-panel',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, GameInfoModalComponent, NgIf],
+  imports: [CommonModule, HeaderComponent, GameInfoModalComponent, NgIf,AsyncPipe],
   templateUrl: './game-panel.component.html',
   styleUrl: './game-panel.component.scss'
 })

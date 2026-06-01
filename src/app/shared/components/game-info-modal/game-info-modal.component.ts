@@ -1,5 +1,6 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
+import { GameMenuService } from '../../../services/game-menu.service';
 
 @Component({
   selector: 'app-game-info-modal',
@@ -9,7 +10,8 @@ import { Component } from '@angular/core';
   styleUrl: './game-info-modal.component.scss'
 })
 export class GameInfoModalComponent {
-  showModal = true;
+
+  constructor(private modalService:GameMenuService){}
 
   maxWins = [
     { bullets: 1, drums: 1, maxWin: '1.16x', rtp: '96.67%' },
@@ -25,4 +27,8 @@ export class GameInfoModalComponent {
     { bullets: 4, drums: 2, maxWin: '8.69x', rtp: '96.56%' },
     { bullets: 4, drums: 3, maxWin: '26.06x', rtp: '96.52%' },
   ];
+
+  closeModal(){
+    this.modalService.closeGameInfoModal();
+  }
 }

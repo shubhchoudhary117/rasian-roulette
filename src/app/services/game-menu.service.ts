@@ -11,10 +11,12 @@ export class GameMenuService {
     gameInfoModal$ = this.gameInfoModalSubject.asObservable();
 
     openGameInfoModal(): void {
+        console.log('OPEN');
         this.gameInfoModalSubject.next(true);
     }
 
     closeGameInfoModal(): void {
+        console.log('CLOSE');
         this.gameInfoModalSubject.next(false);
     }
 
