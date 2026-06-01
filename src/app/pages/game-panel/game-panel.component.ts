@@ -213,25 +213,14 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private getRandomPopupPos() {
     const positions = [
-      // Drum ke bilkul upar
-      { top: '40%', left: '50%', right: 'auto', bottom: 'auto', transform: 'translateX(-50%) rotate(-6deg)' },
-      // Drum ke left side
       { top: '42%', left: '10%', right: 'auto', bottom: 'auto', transform: 'translateY(-50%) rotate(-8deg)' },
-      // Drum ke right side
       { top: '42%', left: 'auto', right: '35%', bottom: 'auto', transform: 'translateY(-50%) rotate(8deg)' },
-      // Drum ke upar-left
       { top: '35%', left: '20%', right: 'auto', bottom: 'auto', transform: 'rotate(-10deg)' },
-      // Drum ke upar-right
       { top: '35%', left: 'auto', right: '40%', bottom: 'auto', transform: 'rotate(10deg)' },
-      // Drum ke center pe hi (upar overlay)
       { top: '50%', left: '65%', right: 'auto', bottom: 'auto', transform: 'translate(-50%, -50%) rotate(-4deg)' },
-      // Drum ke thoda neeche-left
       { top: 'auto', left: '50%', right: 'auto', bottom: 'auto', transform: 'rotate(-7deg)' },
-      // Drum ke thoda neeche-right
       { top: 'auto', left: 'auto', right: '40%', bottom: '15%', transform: 'rotate(7deg)' },
-
       { top: '30%', left: '30%', right: 'auto', bottom: 'auto', transform: 'rotate(-7deg)' },
-      // Drum ke thoda neeche-right
       { top: '20%', left: 'auto', right: '30%', bottom: 'auto', transform: 'rotate(7deg)' },
     ];
     return positions[Math.floor(Math.random() * positions.length)];
@@ -329,11 +318,14 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   get betDisplay(): string {
     return this.currentBet.toFixed(2);
   }
+
   get balanceDisplay(): string {
-    return this.balance.toLocaleString('en-US', {
-      minimumFractionDigits: 2, maximumFractionDigits: 2
-    }) + ' $';
+    return this.balance.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
   }
+
   get multiplier(): number {
     const safe = this.TOTAL_SLOTS - this.bullets;
     if (safe <= 0) return 1;
@@ -423,11 +415,12 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     const rings = this.drumRingRefs.toArray();
     const triggers = this.triggerRefs.toArray();
     const duration = this.isTurboMode
-      ? 200 + Math.random() * 150
-      : 2600 + Math.random() * 800;
+      ? 200 + Math.random() * 100
+      : 1500 + Math.random() * 400;
+
     const extraSpins = this.isTurboMode
       ? 1 * 360
-      : (4 + Math.floor(Math.random() * 4)) * 360;
+      : (2 + Math.floor(Math.random() * 2)) * 360;
 
     // ── Per-drum result prepare ──────────────────────────────
     const results: { targetSlot: number; isWin: boolean; drumIndex: number }[] = [];
