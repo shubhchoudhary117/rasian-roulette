@@ -94,28 +94,28 @@
                         <button class="gp__bet-amount-btn" [disabled]="spinning || isAutoPlaying" (click)="increaseBet()">+</button>
                     </div>
                     <div class="gp__place-bet-actions" *ngIf="!isAutoPlaying">
-                        <button class="gp__auto-bet-btn" (click)="openAutobetModal()">
+                        <button class="gp__auto-bet-btn" [disabled]="spinning || isAutoPlaying" (click)="openAutobetModal()">
                             <i class="fa-solid fa-rotate-right"></i>
                         </button>
-                        <button class="gp__spin-btn" [disabled]="spinning" (click)="spin()">
+                        <button class="gp__spin-btn" [disabled]="spinning || isAutoPlaying" (click)="spin()">
                             SPIN
                         </button>
-                        <button class="gp__auto-bet-btn">
+                        <button class="gp__auto-bet-btn" [disabled]="spinning || isAutoPlaying" [class.active]="isTurboMode" (click)="toggleTurboMode()">
                             <i class="fa-solid fa-bolt"></i>
                         </button>
                     </div>
 
-                    <div class="gp__place-bet-actions" *ngIf="isAutoPlaying">
-                        <button class="gp__auto-bet-btn active-auto">
+                    <div class="gp__place-bet-actions" *ngIf="!isAutoPlaying">
+                        <button class="gp__auto-bet-btn active-auto" [disabled]=" isAutoPlaying">
                             <i class="fa-solid fa-rotate-right"></i>
                         </button>
                         <button class="gp__spin-btn stop-btn" (click)="stopAutoPlay()">
                             <i class="fa-solid fa-stop"></i>
                         </button>
-                        <button class="gp__auto-bet-btn remaining-btn">
+                        <button class="gp__auto-bet-btn disabled remaining-btn" [disabled]=" isAutoPlaying">
                         <i class="fa-solid fa-rotate-right"></i> {{ remainingRounds }}
                         </button>
-                        <button class="gp__auto-bet-btn">
+                        <button class="gp__auto-bet-btn" [disabled]=" isAutoPlaying" [class.active]="isTurboMode">
                             <i class="fa-solid fa-bolt"></i>
                         </button>
                     </div>
@@ -142,8 +142,8 @@
                         </div>
                     </div>
 
-                    <div class="gp__modal-overlay" *ngIf="showAutoBetModal">
-                        <div class="gp__model">
+                    <div class="gp__modal-overlay" *ngIf="showAutoBetModal" (click)="closeAutoBetModal()">
+                        <div class="gp__model" (click)="$event.stopPropagation()">
                             <h2 class="gp__modal-heading">Auto Play</h2>
                             <button class="gp__modal-close" (click)="closeAutoBetModal()"><i
                                     class="fas fa-close"></i></button>

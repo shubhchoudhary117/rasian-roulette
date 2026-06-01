@@ -51,19 +51,14 @@ export class AudioService {
     private unlockAudio(): void {
 
         Object.values(this.sounds).forEach(sound => {
-
             sound.muted = true;
-
             sound.play()
                 .then(() => {
-
                     sound.pause();
                     sound.currentTime = 0;
                     sound.muted = false;
-
                 })
                 .catch(() => { });
-
         });
 
     }
@@ -75,18 +70,13 @@ export class AudioService {
     private listenForFirstInteraction(): void {
 
         const handler = () => {
-
             if (!this.userInteracted) {
-
                 this.userInteracted = true;
-
                 this.unlockAudio();
-
                 if (this.bgStartPending && this.musicEnabled) {
                     this.startBgMusic();
                 }
             }
-
             document.removeEventListener('touchstart', handler);
             document.removeEventListener('click', handler);
             document.removeEventListener('keydown', handler);
@@ -98,25 +88,17 @@ export class AudioService {
         document.addEventListener('keydown', handler);
     }
 
-    // --------------------------------------------------
-    // BG MUSIC
-    // --------------------------------------------------
+    // --------------------------------------------------BG MUSIC
 
     private startBgMusic(): void {
-
         const bg = this.sounds['bg'];
-
         if (!bg) return;
-
         bg.currentTime = 0;
-
         bg.play().catch(() => { });
     }
 
     tryStartBg(): void {
-
         if (!this.musicEnabled) return;
-
         if (this.userInteracted) {
             this.startBgMusic();
         } else {
@@ -125,19 +107,13 @@ export class AudioService {
     }
 
     stopBg(): void {
-
         this.bgStartPending = false;
-
         const bg = this.sounds['bg'];
-
         bg.pause();
         bg.currentTime = 0;
     }
 
-    // --------------------------------------------------
-    // FX
-    // --------------------------------------------------
-
+    // --------------------------------------------------FX
     playTrigger(): void {
         this.play('trigger');
     }
@@ -154,14 +130,9 @@ export class AudioService {
         this.play('boom');
     }
 
-    // --------------------------------------------------
-    // SETTINGS
-    // --------------------------------------------------
-
+    // -------------------------------------------------- SETTINGS
     toggleSound(): void {
-
         this.soundEnabled = !this.soundEnabled;
-
         localStorage.setItem(
             this.SOUND_KEY,
             String(this.soundEnabled)
@@ -175,9 +146,7 @@ export class AudioService {
     }
 
     toggleMusic(): void {
-
         this.musicEnabled = !this.musicEnabled;
-
         localStorage.setItem(
             this.MUSIC_KEY,
             String(this.musicEnabled)
@@ -190,42 +159,29 @@ export class AudioService {
         }
     }
 
-    // --------------------------------------------------
-    // CORE PLAY
-    // --------------------------------------------------
-
+    // --------------------------------------------------CORE PLAY
     private play(name: string): void {
-
         if (!this.soundEnabled && name !== 'bg') return;
-
         if (name === 'bg' && !this.musicEnabled) return;
 
         const audio = this.sounds[name];
 
         if (!audio) return;
-
-        // Background music clone nahi karni
         if (name === 'bg') {
 
             audio.play().catch(() => { });
-
             return;
         }
 
         // Trigger/Boom overlap fix
         const clone = audio.cloneNode(true) as HTMLAudioElement;
-
         clone.volume = audio.volume;
-
         clone.play().catch(() => { });
     }
 
     private stop(name: string): void {
-
         const audio = this.sounds[name];
-
         if (!audio) return;
-
         audio.pause();
         audio.currentTime = 0;
     }

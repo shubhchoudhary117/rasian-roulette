@@ -13,7 +13,7 @@ interface SlotConfig {
   y: number;
   isBullet: boolean;
   isHit: boolean;
-  isBoom: boolean;   // ← naya: bomb animation
+  isBoom: boolean;
 }
 
 interface DrumState {
@@ -28,7 +28,7 @@ interface DrumState {
 @Component({
   selector: 'app-game-panel',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, GameInfoModalComponent,NgIf],
+  imports: [CommonModule, HeaderComponent, GameInfoModalComponent, NgIf],
   templateUrl: './game-panel.component.html',
   styleUrl: './game-panel.component.scss'
 })
@@ -39,8 +39,6 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
 
   readonly TOTAL_SLOTS = 6;
   readonly BET_STEPS = [0.10, 0.25, 0.50, 1, 2, 5, 10, 25, 50, 100];
-  // Slot-0 top pe (12 o'clock), baaki clockwise
-  // Angle formula: slot i → (i * 60 - 90) degrees
   readonly SLOT_ANGLES = [0, 60, 120, 180, 240, 300];
   stakes: any = [0.10,
     0.40, 0.80, 1.40, 1.80, 3.00, 5.00, 8.00, 10.00, 14.00, 18.00, 40.00, 75.00, 150.00, 250.00,
@@ -71,6 +69,7 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   autoPlayTimer: any = null;
   remainingRounds = 0;
   showGameInfo: boolean = false;
+  isTurboMode = false;
 
   private winPopupTimer: any;
   private losePopupTimer: any;
@@ -82,7 +81,7 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.rebuildAllDrums();
     this.currentBet = this.stakes[0];
-    this.preloadAssets(); 
+    this.preloadAssets();
   }
 
   ngAfterViewInit(): void {
@@ -155,14 +154,13 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
-    // Mobile pe canplaythrough reliable nahi — readyState check better hai
+
     const audioPromises = audios.map(src =>
       new Promise<void>(resolve => {
         const audio = new Audio();
 
-        // Already enough data hai to play
         const check = () => {
-          if (audio.readyState >= 3) { // HAVE_FUTURE_DATA
+          if (audio.readyState >= 3) {
             resolve();
             return;
           }
@@ -170,10 +168,9 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
 
         audio.oncanplaythrough = () => resolve();
         audio.onprogress = check;
-        audio.onstalled = () => resolve();  // Network slow — aage badho
+        audio.onstalled = () => resolve();
         audio.onerror = () => resolve();
 
-        // 5 sec max wait — mobile pe kabhi kabhi audio block hoti
         const timeout = setTimeout(() => resolve(), 5000);
 
         audio.addEventListener('canplaythrough', () => {
@@ -190,7 +187,7 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     Promise.all([...imagePromises, ...audioPromises]).then(() => {
       this.ngZone.run(() => {
         this.gameIsLoading = false;
-        this.audio.tryStartBg(); 
+        this.audio.tryStartBg();
         setTimeout(() => this.setupResizeObserver(), 50);
       });
     });
@@ -221,7 +218,6 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Helpers ───────────────────────────────────────────────
   private getSlotPos(angleIndex: number): { x: number; y: number } {
-    // slot-0 → -90deg (top), slot-1 → -30deg, slot-2 → 30deg ...
     this.slotRadius = Math.round(this.drumSize * 0.28);
     const angle = (angleIndex * 60 - 90) * Math.PI / 180;
     const cx = this.drumSize / 2;
@@ -357,7 +353,12 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   async spin(): Promise<void> {
     if (this.spinning) return;
 
-    this.audio.playSpin();
+    if (!this.isTurboMode) {
+      this.audio.playSpin();
+    }
+    if (!this.isTurboMode) {
+      this.audio.stopSpin();
+    }
 
     if (this.balance < this.bet) {
       this.stopAutoPlay();
@@ -375,8 +376,12 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const rings = this.drumRingRefs.toArray();
     const triggers = this.triggerRefs.toArray();
-    const duration = 2600 + Math.random() * 800;
-    const extraSpins = (4 + Math.floor(Math.random() * 4)) * 360;
+    const duration = this.isTurboMode
+      ? 200 + Math.random() * 150   
+      : 2600 + Math.random() * 800; 
+    const extraSpins = this.isTurboMode
+      ? 1 * 360                    
+      : (4 + Math.floor(Math.random() * 4)) * 360;
 
     // ── Per-drum result prepare ──────────────────────────────
     const results: { targetSlot: number; isWin: boolean; drumIndex: number }[] = [];
@@ -414,7 +419,10 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
 
     await Promise.all(spinPromises);
 
-    this.audio.stopSpin();
+    if (!this.isTurboMode) {
+      this.audio.stopSpin();
+    }
+
 
     const actualResults = this.drumStates.map((ds, drumIndex) => {
 
@@ -552,18 +560,15 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private getSlotUnderTrigger(rotation: number): number {
     const normalized = ((rotation % 360) + 360) % 360;
-
     let closestSlot = 0;
     let minDiff = 999;
 
     for (let i = 0; i < this.TOTAL_SLOTS; i++) {
       const slotAngle = (i * 60 + normalized) % 360;
-
       const diff = Math.min(
         Math.abs(slotAngle),
         360 - Math.abs(slotAngle)
       );
-
       if (diff < minDiff) {
         minDiff = diff;
         closestSlot = i;
@@ -620,4 +625,8 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
+  toggleTurboMode(): void {
+    if (this.spinning || this.isAutoPlaying) return;
+    this.isTurboMode = !this.isTurboMode;
+  }
 }
