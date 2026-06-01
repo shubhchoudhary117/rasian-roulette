@@ -139,7 +139,7 @@
   &__wow-overlay,
   &__bomb-overlay {
     position: absolute;
-    z-index: 9999;
+    z-index: 999;
     pointer-events: none;
     display: flex;
     flex-direction: column;
@@ -733,7 +733,7 @@
     background: #0009;
     display: grid;
     place-items: center;
-    z-index: 999;
+    z-index: 9999;
   }
 
   &__model {
