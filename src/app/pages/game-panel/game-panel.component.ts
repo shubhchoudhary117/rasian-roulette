@@ -397,9 +397,7 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.isTurboMode) {
       this.audio.playSpin();
     }
-    if (!this.isTurboMode) {
-      this.audio.stopSpin();
-    }
+   
 
     if (this.balance < this.bet) {
       this.stopAutoPlay();

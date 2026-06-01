@@ -4,9 +4,7 @@ import { Injectable } from '@angular/core';
     providedIn: 'root'
 })
 export class AudioService {
-
     private sounds: Record<string, HTMLAudioElement> = {};
-
     private SOUND_KEY = 'rr_sound_enabled';
     private MUSIC_KEY = 'rr_music_enabled';
 
@@ -15,9 +13,9 @@ export class AudioService {
 
     private userInteracted = false;
     private bgStartPending = false;
+    private spinPlaying = false; 
 
     constructor() {
-
         const sound = localStorage.getItem(this.SOUND_KEY);
         const music = localStorage.getItem(this.MUSIC_KEY);
 
@@ -36,6 +34,8 @@ export class AudioService {
         this.sounds['boom'].volume = 0.8;
         this.sounds['trigger'].volume = 0.8;
 
+        this.sounds['spin'].loop = true;
+
         Object.values(this.sounds).forEach(audio => {
             audio.preload = 'auto';
             audio.load();
@@ -44,12 +44,8 @@ export class AudioService {
         this.listenForFirstInteraction();
     }
 
-    // --------------------------------------------------
-    // AUDIO UNLOCK (iPhone Fix)
-    // --------------------------------------------------
-
+    // ── Audio Unlock (iPhone fix) ──────────────────────────
     private unlockAudio(): void {
-
         Object.values(this.sounds).forEach(sound => {
             sound.muted = true;
             sound.play()
@@ -60,15 +56,10 @@ export class AudioService {
                 })
                 .catch(() => { });
         });
-
     }
 
-    // --------------------------------------------------
-    // FIRST USER INTERACTION
-    // --------------------------------------------------
-
+    // ── First interaction ──────────────────────────────────
     private listenForFirstInteraction(): void {
-
         const handler = () => {
             if (!this.userInteracted) {
                 this.userInteracted = true;
@@ -80,7 +71,6 @@ export class AudioService {
             document.removeEventListener('touchstart', handler);
             document.removeEventListener('click', handler);
             document.removeEventListener('keydown', handler);
-
         };
 
         document.addEventListener('touchstart', handler, { passive: true });
@@ -88,11 +78,10 @@ export class AudioService {
         document.addEventListener('keydown', handler);
     }
 
-    // --------------------------------------------------BG MUSIC
-
+    // ── BG Music ───────────────────────────────────────────
     private startBgMusic(): void {
         const bg = this.sounds['bg'];
-        if (!bg) return;
+        if (!bg || bg.readyState < 2) return; 
         bg.currentTime = 0;
         bg.play().catch(() => { });
     }
@@ -109,48 +98,60 @@ export class AudioService {
     stopBg(): void {
         this.bgStartPending = false;
         const bg = this.sounds['bg'];
+        if (!bg) return;
         bg.pause();
         bg.currentTime = 0;
     }
 
-    // --------------------------------------------------FX
-    playTrigger(): void {
-        this.play('trigger');
-    }
-
+    // ── Spin ───────────────────────────────────────────────
     playSpin(): void {
-        this.play('spin');
+        if (!this.soundEnabled) return;
+        if (this.spinPlaying) return; 
+
+        const audio = this.sounds['spin'];
+        if (!audio) return;
+
+        audio.pause();
+        audio.currentTime = 0;
+        audio.play()
+            .then(() => { this.spinPlaying = true; })
+            .catch(() => { this.spinPlaying = false; });
     }
 
     stopSpin(): void {
-        this.stop('spin');
+        const audio = this.sounds['spin'];
+        if (!audio) return;
+        audio.pause();
+        audio.currentTime = 0;
+        this.spinPlaying = false; 
+    }
+
+    // ── FX ─────────────────────────────────────────────────
+    playTrigger(): void {
+        if (!this.soundEnabled) return;
+        this.playClone('trigger');
     }
 
     playBoom(): void {
-        this.play('boom');
+        if (!this.soundEnabled) return;
+        this.playClone('boom');
     }
 
-    // -------------------------------------------------- SETTINGS
+    // ── Settings ───────────────────────────────────────────
     toggleSound(): void {
         this.soundEnabled = !this.soundEnabled;
-        localStorage.setItem(
-            this.SOUND_KEY,
-            String(this.soundEnabled)
-        );
+        localStorage.setItem(this.SOUND_KEY, String(this.soundEnabled));
 
         if (!this.soundEnabled) {
-
-            ['trigger', 'spin', 'boom']
-                .forEach(k => this.stop(k));
+            this.stopSpin();
+            this.stop('boom');
+            this.stop('trigger');
         }
     }
 
     toggleMusic(): void {
         this.musicEnabled = !this.musicEnabled;
-        localStorage.setItem(
-            this.MUSIC_KEY,
-            String(this.musicEnabled)
-        );
+        localStorage.setItem(this.MUSIC_KEY, String(this.musicEnabled));
 
         if (this.musicEnabled) {
             this.tryStartBg();
@@ -159,24 +160,14 @@ export class AudioService {
         }
     }
 
-    // --------------------------------------------------CORE PLAY
-    private play(name: string): void {
-        if (!this.soundEnabled && name !== 'bg') return;
-        if (name === 'bg' && !this.musicEnabled) return;
 
+    private playClone(name: string): void {
         const audio = this.sounds[name];
-
         if (!audio) return;
-        if (name === 'bg') {
-
-            audio.play().catch(() => { });
-            return;
-        }
-
-        // Trigger/Boom overlap fix
         const clone = audio.cloneNode(true) as HTMLAudioElement;
         clone.volume = audio.volume;
         clone.play().catch(() => { });
+        clone.addEventListener('ended', () => clone.remove(), { once: true });
     }
 
     private stop(name: string): void {
