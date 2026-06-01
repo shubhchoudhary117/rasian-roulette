@@ -404,7 +404,7 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.isTurboMode) {
       this.audio.playSpin();
     }
-   
+
 
     if (this.balance < this.bet) {
       this.stopAutoPlay();
@@ -629,12 +629,12 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     return closestSlot;
   }
 
-  startAutoPlay(): void {
+  async startAutoPlay(): Promise<void> {
+    await this.audio.resumeAudio();
     if (this.isAutoPlaying) return;
     this.closeAutoBetModal();
     this.isAutoPlaying = true;
     this.remainingRounds = this.selectedAutoRounds;
-
     this.runAutoPlay();
   }
 
