@@ -14,15 +14,21 @@
 
         <div class="gp__game-viewport">
             <div class="gp__game-box" #gameBox>
-                <!-- Win popup — tab tak rahe jab tk dobara spin na ho -->
-                <div class="gp__wow-overlay" *ngIf="winPopupVisible">
-                    <span class="gp__wow-image"><img src="assets/images/wow.png" alt="" class="img"></span>
+                <!-- Win popup -->
+                <div class="gp__wow-overlay" *ngIf="winPopupVisible" [style.top]="winPopupPos.top" [style.left]="winPopupPos.left"
+                    [style.right]="winPopupPos.right" [style.bottom]="winPopupPos.bottom" [style.transform]="winPopupPos.transform">
+                    <span class="gp__wow-image">
+                        <img [src]="winPopupImage" alt="" class="img">
+                    </span>
                     <span class="gp__wow-amount">+{{ winAmount | number:'1.2-2' }} $</span>
                 </div>
-
-                <!-- Loss popup — 3 sec baad khud hat jaye -->
-                <div class="gp__bomb-overlay" *ngIf="losePopupVisible">
-                    <span class="gp__bomb-image"><img src="assets/images/boom.png" alt="" class="img"></span>
+                
+                <!-- Loss popup -->
+                <div class="gp__bomb-overlay" *ngIf="losePopupVisible" [style.top]="losePopupPos.top" [style.left]="losePopupPos.left"
+                    [style.right]="losePopupPos.right" [style.bottom]="losePopupPos.bottom" [style.transform]="losePopupPos.transform">
+                    <span class="gp__bomb-image">
+                        <img [src]="losePopupImage" alt="" class="img">
+                    </span>
                 </div>
 
                 <div class="gp__drums-grid" [class.gp__drums-grid--wrap]="numDrums > 3">

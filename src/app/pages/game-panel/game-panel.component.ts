@@ -76,7 +76,17 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   private resizeObserver?: ResizeObserver;
   gameIsLoading = true;
 
+  // Win/Loss popup position & image arrays
+  private winImages = ['assets/images/wow.png', 'assets/images/great.png', 'assets/images/nice.png'];
+  private loseImages = ['assets/images/boom.png', 'assets/images/shoot.png', 'assets/images/bang.png'];
+
+  winPopupImage = '';
+  losePopupImage = '';
+  winPopupPos = { top: '', left: '', right: '', bottom: '', transform: '' };
+  losePopupPos = { top: '', left: '', right: '', bottom: '', transform: '' };
+
   constructor(private ngZone: NgZone, private audio: AudioService, public gameMenuService: GameMenuService) { }
+
 
   ngOnInit(): void {
     this.rebuildAllDrums();
@@ -191,6 +201,37 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
         setTimeout(() => this.setupResizeObserver(), 50);
       });
     });
+  }
+
+
+  private getRandomPopupPos() {
+    const positions = [
+      // Drum ke bilkul upar
+      { top: '40%', left: '50%', right: 'auto', bottom: 'auto', transform: 'translateX(-50%) rotate(-6deg)' },
+      // Drum ke left side
+      { top: '42%', left: '10%', right: 'auto', bottom: 'auto', transform: 'translateY(-50%) rotate(-8deg)' },
+      // Drum ke right side
+      { top: '42%', left: 'auto', right: '35%', bottom: 'auto', transform: 'translateY(-50%) rotate(8deg)' },
+      // Drum ke upar-left
+      { top: '35%', left: '20%', right: 'auto', bottom: 'auto', transform: 'rotate(-10deg)' },
+      // Drum ke upar-right
+      { top: '35%', left: 'auto', right: '40%', bottom: 'auto', transform: 'rotate(10deg)' },
+      // Drum ke center pe hi (upar overlay)
+      { top: '50%', left: '65%', right: 'auto', bottom: 'auto', transform: 'translate(-50%, -50%) rotate(-4deg)' },
+      // Drum ke thoda neeche-left
+      { top: 'auto', left: '50%', right: 'auto', bottom: 'auto', transform: 'rotate(-7deg)' },
+      // Drum ke thoda neeche-right
+      { top: 'auto', left: 'auto', right: '40%', bottom: '15%', transform: 'rotate(7deg)' },
+
+      { top: '30%', left: '30%', right: 'auto', bottom: 'auto', transform: 'rotate(-7deg)' },
+      // Drum ke thoda neeche-right
+      { top: '20%', left: 'auto', right: '30%', bottom: 'auto', transform: 'rotate(7deg)' },
+    ];
+    return positions[Math.floor(Math.random() * positions.length)];
+  }
+
+  private getRandomItem<T>(arr: T[]): T {
+    return arr[Math.floor(Math.random() * arr.length)];
   }
 
 
@@ -377,10 +418,10 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
     const rings = this.drumRingRefs.toArray();
     const triggers = this.triggerRefs.toArray();
     const duration = this.isTurboMode
-      ? 200 + Math.random() * 150   
-      : 2600 + Math.random() * 800; 
+      ? 200 + Math.random() * 150
+      : 2600 + Math.random() * 800;
     const extraSpins = this.isTurboMode
-      ? 1 * 360                    
+      ? 1 * 360
       : (4 + Math.floor(Math.random() * 4)) * 360;
 
     // ── Per-drum result prepare ──────────────────────────────
@@ -451,6 +492,9 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
         const payout = parseFloat((this.bet * this.multiplier).toFixed(2));
         this.balance += payout;
         this.winAmount = payout;
+
+        this.winPopupImage = this.getRandomItem(this.winImages);
+        this.winPopupPos = this.getRandomPopupPos();
         this.winPopupVisible = true;
 
         this.drumStates.forEach(ds => {
@@ -488,6 +532,8 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private showLosePopup(): void {
+    this.losePopupImage = this.getRandomItem(this.loseImages);
+    this.losePopupPos = this.getRandomPopupPos();
     this.losePopupVisible = true;
     clearTimeout(this.losePopupTimer);
     this.losePopupTimer = setTimeout(() => {
