@@ -140,12 +140,17 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
   private preloadAssets(): void {
     const images = [
       'assets/images/wow.png',
+      'assets/images/great.png',
+      'assets/images/nice.png',
       'assets/images/boom.png',
+      'assets/images/shoot.png',
+      'assets/images/bang.png',
       'assets/images/pointer.png',
       'assets/images/drum-center-icon.png',
       'assets/images/drum.png',
       'assets/images/bullet.png',
       'assets/images/blast-bullet.png',
+      'assets/images/game-loading.gif',
     ];
 
     const audios = [
@@ -164,45 +169,47 @@ export class GamePanelComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
-
     const audioPromises = audios.map(src =>
       new Promise<void>(resolve => {
         const audio = new Audio();
-
-        const check = () => {
-          if (audio.readyState >= 3) {
-            resolve();
-            return;
-          }
-        };
-
-        audio.oncanplaythrough = () => resolve();
-        audio.onprogress = check;
-        audio.onstalled = () => resolve();
-        audio.onerror = () => resolve();
-
         const timeout = setTimeout(() => resolve(), 5000);
-
         audio.addEventListener('canplaythrough', () => {
           clearTimeout(timeout);
           resolve();
         }, { once: true });
-
+        audio.onstalled = () => resolve();
+        audio.onerror = () => resolve();
         audio.preload = 'auto';
         audio.src = src;
         audio.load();
       })
     );
 
-    Promise.all([...imagePromises, ...audioPromises]).then(() => {
-      this.ngZone.run(() => {
-        this.gameIsLoading = false;
-        this.audio.tryStartBg();
-        setTimeout(() => this.setupResizeObserver(), 50);
-      });
+    // ✅ CSS background image (drum.png) bhi preload karo
+    const cssImagePromises = [
+      'assets/images/drum.png',
+      'assets/images/bullet.png',
+      'assets/images/blast-bullet.png',
+    ].map(src =>
+      new Promise<void>(resolve => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = src;
+      })
+    );
+
+    Promise.all([...imagePromises, ...cssImagePromises, ...audioPromises]).then(() => {
+      // ✅ Thoda aur wait karo taaki Angular DOM render kar le
+      setTimeout(() => {
+        this.ngZone.run(() => {
+          this.gameIsLoading = false;
+          this.audio.tryStartBg();
+          setTimeout(() => this.setupResizeObserver(), 100);
+        });
+      }, 300);
     });
   }
-
 
   private getRandomPopupPos() {
     const positions = [

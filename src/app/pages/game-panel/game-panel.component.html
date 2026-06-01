@@ -3,10 +3,11 @@
 <audio #boomSound src="assets/audios/boom-sound.mp3"></audio>
 <audio #bgSound src="assets/audios/boom-sound.mp3" loop></audio>
 
-<div class="game-loader" *ngIf="gameIsLoading">
-    <img src="assets/images/game-loading.gif" alt="Game loading " class="game-loader-img">
+<div class="game-loader" [style.display]="gameIsLoading ? 'flex' : 'none'">
+    <img src="assets/images/game-loading.gif" alt="Game loading" class="game-loader-img">
 </div>
-<section class="gp" *ngIf="!gameIsLoading">
+
+<section class="gp" [style.visibility]="gameIsLoading ? 'hidden' : 'visible'" style="height:100dvh; overflow:hidden;">
     <main class="gp__container">
         <div class="gp__header">
             <app-header></app-header>
